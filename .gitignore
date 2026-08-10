@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.next*/
+out/
+.env.local
+.env.*.local
+*.log*
+*.err
+.DS_Store
+.vercel
+.turbo
+.data/
+*.log
+*.tsbuildinfo

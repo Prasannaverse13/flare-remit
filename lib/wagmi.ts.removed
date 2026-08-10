@@ -1,0 +1,25 @@
+/**
+ * wagmi + RainbowKit config. Defaults to Coston2; mainnet is one config
+ * flip away (see COSTON2 export in lib/flare.ts).
+ *
+ * We deliberately avoid the Coinbase wallet connector — it pulls in a chain
+ * of optional x402 packages (@x402/core, @x402/evm, @x402/svm, solana, …)
+ * that we don't need for this hackathon demo. The remaining connectors
+ * (MetaMask + WalletConnect + injected) are plenty.
+ */
+'use client';
+
+import { getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { COSTON2 } from './flare';
+
+const WC_PROJECT_ID =
+  process.env.NEXT_PUBLIC_WC_PROJECT_ID && process.env.NEXT_PUBLIC_WC_PROJECT_ID !== 'YOUR_WC_PROJECT_ID'
+    ? process.env.NEXT_PUBLIC_WC_PROJECT_ID
+    : 'demo';
+
+export const wagmiConfig = getDefaultConfig({
+  appName: 'FXRP Remittance Jar',
+  projectId: WC_PROJECT_ID,
+  chains: [COSTON2],
+  ssr: true,
+});

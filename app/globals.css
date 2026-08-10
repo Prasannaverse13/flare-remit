@@ -1,0 +1,374 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------
+ * Apple design system — fluid, translucent, restrained.
+ * ------------------------------------------------------------ */
+:root {
+  color-scheme: dark;
+  --hairline: rgba(255, 255, 255, 0.08);
+  --hairline-strong: rgba(255, 255, 255, 0.14);
+  --glass-bg: rgba(28, 28, 30, 0.65);
+  --glass-bg-hi: rgba(44, 44, 46, 0.78);
+}
+
+html, body {
+  background: #000;
+  color: var(--bone);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'ss01', 'cv11';
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+  background:
+    radial-gradient(900px 600px at 70% -10%, rgba(255, 59, 48, 0.08), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(10, 132, 255, 0.05), transparent 60%),
+    #000;
+}
+
+::selection {
+  background: rgba(255, 59, 48, 0.35);
+  color: #fff;
+}
+
+/* ------------------------------------------------------------
+ * Materials — translucent glass surfaces, soft layered shadows.
+ * The Henry brief used hairline borders. Apple uses translucency.
+ * ------------------------------------------------------------ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--hairline);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 20px 50px -20px rgba(0, 0, 0, 0.5);
+}
+
+.glass-hi {
+  background: var(--glass-bg-hi);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 20px;
+}
+
+.glass-floating {
+  background: rgba(28, 28, 30, 0.7);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--hairline);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+.divider {
+  height: 1px;
+  background: var(--hairline);
+}
+
+/* ------------------------------------------------------------
+ * Pills — 100px-radius is non-negotiable. Apple uses 9999px.
+ * ------------------------------------------------------------ */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 9999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f2f2f7;
+  border: 1px solid var(--hairline);
+  transition: background 160ms cubic-bezier(0.32, 0.72, 0, 1), transform 120ms ease;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pill:hover { background: rgba(255, 255, 255, 0.12); }
+.pill:active { transform: scale(0.97); }
+
+.pill-primary {
+  background: #ff3b30;
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 18px rgba(255, 59, 48, 0.4), 0 0 0 1px rgba(255, 59, 48, 0.6) inset;
+}
+.pill-primary:hover { background: #ff453a; }
+
+.pill-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 9999px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #8e8e93;
+  background: transparent;
+  transition: all 200ms cubic-bezier(0.32, 0.72, 0, 1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pill-tab:hover { color: #f2f2f7; }
+.pill-tab[data-active='true'] {
+  color: #f2f2f7;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+/* ------------------------------------------------------------
+ * Tab switcher — the Living Room / Kitchen / Bathroom pill row
+ * at the top of every page.
+ * ------------------------------------------------------------ */
+.tab-rail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 9999px;
+  background: rgba(28, 28, 30, 0.7);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--hairline);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+/* ------------------------------------------------------------
+ * Side rail — vertical mini dock (the live icon rail)
+ * ------------------------------------------------------------ */
+.dock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 6px;
+  border-radius: 28px;
+  background: rgba(28, 28, 30, 0.7);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--hairline);
+}
+
+.dock-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #8e8e93;
+  transition: color 160ms ease, background 160ms ease, transform 120ms ease;
+  cursor: pointer;
+}
+.dock-icon:hover { color: #f2f2f7; background: rgba(255, 255, 255, 0.04); }
+.dock-icon:active { transform: scale(0.94); }
+.dock-icon[data-active='true'] {
+  color: #ff3b30;
+  background: rgba(255, 59, 48, 0.12);
+}
+
+/* ------------------------------------------------------------
+ * Radial dial — the center focal point
+ * ------------------------------------------------------------ */
+.dial-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 14;
+  stroke-linecap: round;
+}
+.dial-progress {
+  fill: none;
+  stroke: #ff3b30;
+  stroke-width: 14;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 12px rgba(255, 59, 48, 0.5));
+  transition: stroke-dashoffset 600ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.dial-knob {
+  fill: #fff;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+  transition: transform 600ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ------------------------------------------------------------
+ * Stat card — vertical color bar on the left, like the Henry
+ * system. Smaller, more compact.
+ * ------------------------------------------------------------ */
+.stat-bar {
+  width: 3px;
+  align-self: stretch;
+  border-radius: 3px;
+}
+
+/* ------------------------------------------------------------
+ * Form — minimal, the only border is a hairline underline.
+ * ------------------------------------------------------------ */
+.field {
+  position: relative;
+  padding: 6px 0;
+}
+.field input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  color: #f2f2f7;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  outline: none;
+  padding: 6px 0;
+}
+.field input::placeholder { color: #48484a; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 9999px;
+  border: 1px solid var(--hairline);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #8e8e93;
+  white-space: nowrap;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8e8e93;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* ------------------------------------------------------------
+ * Spring-tap feedback — every button scales on press.
+ * ------------------------------------------------------------ */
+.tappable {
+  transition: transform 120ms ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.tappable:active { transform: scale(0.97); }
+
+/* ------------------------------------------------------------
+ * Reduced motion.
+ * ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+  .dial-progress, .dial-knob { transition: none !important; }
+}
+
+/* ------------------------------------------------------------
+ * Henry legacy classes � restored for the /app pages.
+ * The landing uses the Apple system above; the in-app shell goes
+ * back to the dark editorial darkroom.
+ * ------------------------------------------------------------ */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8e8e93;
+  font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif;
+}
+
+.card {
+  background: rgba(28, 28, 30, 0.65);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(212, 208, 201, 0.12);
+  border-radius: 10px;
+  padding: 24px;
+}
+
+.product-card {
+  background: #ffffff;
+  color: #000;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 208, 201, 0.08);
+  box-shadow: rgba(20, 21, 26, 0.05) 0px 1px 2px 0px;
+}
+
+.mono-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #878581;
+}
+
+/* ------------------------------------------------------------
+ * Henry scope � overrides the Apple colors back to the original
+ * darkroom palette for the /app/* pages only.
+ * The landing (/) inherits the Apple system above.
+ * ------------------------------------------------------------ */
+.henry-scope {
+  --color-obsidian: #000000;
+  --color-carbon: #141414;
+  --color-tar: #0c0c0c;
+  --color-bone: #d4d0c9;
+  --color-ash: #878581;
+  --color-smoke: #615f5c;
+  --color-pearl: #d9d9d9;
+  --color-graphite: #a1a1a1;
+  --color-chalk: #ffffff;
+  --hairline: rgba(212, 208, 201, 0.12);
+}
+.henry-scope body,
+.henry-scope { color: #d4d0c9; }
+
+.henry-scope .bg-obsidian { background-color: #000000; }
+.henry-scope .bg-tar { background-color: #0c0c0c; }
+.henry-scope .bg-carbon { background-color: #141414; }
+.henry-scope .text-bone { color: #d4d0c9; }
+.henry-scope .text-chalk { color: #ffffff; }
+.henry-scope .text-ash { color: #878581; }
+.henry-scope .text-smoke { color: #615f5c; }
+.henry-scope .text-graphite { color: #a1a1a1; }
+.henry-scope .border-bone\/10 { border-color: rgba(212, 208, 201, 0.10); }
+.henry-scope .border-bone\/15 { border-color: rgba(212, 208, 201, 0.15); }
+.henry-scope .border-bone\/20 { border-color: rgba(212, 208, 201, 0.20); }
+.henry-scope .ring-bone\/20 { --tw-ring-color: rgba(212, 208, 201, 0.20); }
+
+/* The "ours" highlight in compare */
+.henry-scope .text-bone { color: #d4d0c9 !important; }
+.henry-scope .bg-stat-green { background-color: #1fe274; }
+.henry-scope .bg-stat-blue { background-color: #00a8f0; }
+.henry-scope .bg-stat-orange { background-color: #ff9634; }
+.henry-scope .bg-smoke { background-color: #615f5c; }
+.henry-scope .bg-tintGreen { background-color: #30d158; }
+.henry-scope .bg-tintBlue { background-color: #0a84ff; }
+.henry-scope .bg-tintOrange { background-color: #ff9f0a; }
+
+/* Card in Henry look � bone border instead of glass */
+.henry-scope .card {
+  background: #141414;
+  border: 1px solid rgba(212, 208, 201, 0.12);
+  border-radius: 10px;
+  padding: 24px;
+  backdrop-filter: none;
+}
+
+/* Stat bar � the 3px vertical bar on the left of the stat cards */
+.henry-scope .stat-bar { background-color: inherit; }
