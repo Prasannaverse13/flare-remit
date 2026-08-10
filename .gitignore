@@ -12,3 +12,6 @@ out/
 .data/
 *.log
 *.tsbuildinfo
+
+.vercel
+.env*
