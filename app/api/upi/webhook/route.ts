@@ -16,6 +16,7 @@ import { configuredPsp, verifyPspWebhook } from '@/lib/psp';
 import { getPersistedTransfer, persistTransfer, updatePersistedTransfer } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
+// 2026-08-13: signature check fix, see commit 51a40d5 + 8f2ce29
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
