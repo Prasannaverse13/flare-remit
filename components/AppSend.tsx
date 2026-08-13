@@ -43,6 +43,7 @@ export function AppSend() {
   const [stage, setStage] = useState<'compose' | 'pay' | 'tracking'>('compose');
   const [paying, setPaying] = useState(false);
   const [transferId, setTransferId] = useState<string | null>(null);
+  const [payError, setPayError] = useState<string | null>(null);
   const t = useTransferStore((s) => (transferId ? s.transfers[transferId] : undefined));
 
   useEffect(() => {
@@ -73,24 +74,35 @@ export function AppSend() {
 
   async function startPayment() {
     setStage('pay');
+    setPayError(null);
     const tid = transferId ?? ('t_' + Math.random().toString(36).slice(2, 10));
     setTransferId(tid);
-    const r = await fetch('/api/upi/create', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        amountInr: numericAmount,
-        transferId: tid,
-        recipientName,
-        recipientXrplAddress: recipientXrpl,
-        fxrpAmount: quote?.fxrpAmount ?? '',
-      }),
-    });
-    const o = await r.json();
-    setOrder(o);
-    // Auto-open the UPI modal so the user immediately sees the QR / deeplink
-    // instead of having to click "Open in UPI app" again.
-    setShowUpi(true);
+    try {
+      const r = await fetch('/api/upi/create', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          amountInr: numericAmount,
+          transferId: tid,
+          recipientName,
+          recipientXrplAddress: recipientXrpl,
+          fxrpAmount: quote?.fxrpAmount ?? '',
+        }),
+      });
+      const o = await r.json().catch(() => null);
+      if (!r.ok || !o?.deepLink) {
+        setPayError(o?.error ?? `UPI order failed (${r.status})`);
+        setStage('compose');
+        return;
+      }
+      setOrder(o);
+      // Auto-open the UPI modal so the user immediately sees the QR / deeplink
+      // instead of having to click "Open in UPI app" again.
+      setShowUpi(true);
+    } catch (e: any) {
+      setPayError(e?.message ?? 'Network error talking to /api/upi/create');
+      setStage('compose');
+    }
   }
 
   async function simulatePay() {
@@ -259,6 +271,11 @@ export function AppSend() {
                   ? 'A UPI QR will pop up so you can scan with GPay, PhonePe, Paytm, or any UPI app.'
                   : 'Scan the QR or copy the link, then click "I paid" to continue.'}
               </p>
+              {payError && (
+                <span className="ml-3 rounded-full bg-rose-50 px-3 py-1 text-[11px] text-rose-700" role="alert">
+                  {payError}
+                </span>
+              )}
               {stage === 'compose' ? (
                 <button
                   type="button"
