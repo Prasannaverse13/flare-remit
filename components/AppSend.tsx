@@ -86,7 +86,11 @@ export function AppSend() {
         fxrpAmount: quote?.fxrpAmount ?? '',
       }),
     });
-    setOrder(await r.json());
+    const o = await r.json();
+    setOrder(o);
+    // Auto-open the UPI modal so the user immediately sees the QR / deeplink
+    // instead of having to click "Open in UPI app" again.
+    setShowUpi(true);
   }
 
   async function simulatePay() {
@@ -252,8 +256,8 @@ export function AppSend() {
             <div className="flex items-center justify-between pt-2">
               <p className="text-[12px] text-black/55">
                 {stage === 'compose'
-                  ? 'UPI intent fires next. You\'ll see a UPI deep link.'
-                  : 'Pay in your UPI app, then come back here.'}
+                  ? 'A UPI QR will pop up so you can scan with GPay, PhonePe, Paytm, or any UPI app.'
+                  : 'Scan the QR or copy the link, then click "I paid" to continue.'}
               </p>
               {stage === 'compose' ? (
                 <button
@@ -263,7 +267,7 @@ export function AppSend() {
                   className="rounded-full bg-black px-5 py-2.5 text-[13px] font-medium text-chalk transition hover:bg-black/85 disabled:opacity-40"
                   style={{ letterSpacing: '-0.01em' }}
                 >
-                  Continue to UPI →
+                  Pay with UPI →
                 </button>
               ) : (
                 order && <UpiOrderRow order={order} onOpen={() => setShowUpi(true)} onSimulate={simulatePay} onSubmit={submitPaymentReference} verificationPending={verificationPending} paying={paying} />
@@ -315,7 +319,7 @@ export function AppSend() {
               <input value={paymentRef} onChange={(e) => setPaymentRef(e.target.value)} placeholder="Enter the UTR after paying" className="mt-2 w-full rounded-xl border border-black/15 px-3 py-3 font-mono text-sm outline-none focus:border-black" />
             </label>
             <button type="button" onClick={submitPaymentReference} disabled={paymentRef.trim().length < 8} className="mt-3 w-full rounded-full border border-black/20 px-4 py-3 text-sm font-medium disabled:opacity-40">Submit UTR for verification</button>
-            <button type="button" onClick={() => { setShowUpi(false); simulatePay(); }} disabled={paying} className="mt-6 w-full rounded-full bg-black px-4 py-3 text-sm font-medium text-white disabled:opacity-40">{paying ? 'Processing…' : 'Confirm demo payment'}</button>
+            <button type="button" onClick={() => { setShowUpi(false); simulatePay(); }} disabled={paying} className="mt-6 w-full rounded-full bg-black px-4 py-3 text-sm font-medium text-white disabled:opacity-40">{paying ? 'Processing…' : 'I paid — confirm & continue'}</button>
             <p className="mt-3 text-center text-[11px] text-black/45">Demo confirmation is for local testing only. Production minting requires a signed PSP webhook.</p>
           </div>
         </div>
@@ -399,7 +403,7 @@ function UpiOrderRow({
     <div className="flex flex-wrap items-center gap-2">
       {verificationPending && <span className="rounded-full bg-amber-50 px-3 py-2 text-[12px] text-amber-800">Awaiting payment verification</span>}
       <button type="button" onClick={onOpen} className="rounded-full border border-black/20 px-4 py-2 text-[13px] text-black hover:border-black/60">
-        Open in UPI app
+        Show UPI QR
       </button>
       <button
         type="button"
@@ -407,7 +411,7 @@ function UpiOrderRow({
         disabled={paying}
         className="rounded-full bg-black px-5 py-2.5 text-[13px] font-medium text-chalk transition hover:bg-black/85 disabled:opacity-40"
       >
-        {paying ? 'Processing…' : 'Simulate payment success'}
+        {paying ? 'Processing…' : 'I paid — continue'}
       </button>
     </div>
   );
