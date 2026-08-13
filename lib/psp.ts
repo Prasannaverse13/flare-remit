@@ -4,7 +4,13 @@ export type PspProvider = 'razorpay' | 'cashfree' | 'paddle' | 'demo';
 
 /** Verify signed PSP payloads. Secrets stay server-side in .env.local. */
 export function verifyPspWebhook(rawBody: string, signature: string | null, provider: PspProvider) {
-  if (provider === 'demo') return process.env.NODE_ENV !== 'production' && process.env.UPI_DEMO_MODE !== 'false';
+  if (provider === 'demo') {
+    // Demo mode is gated by UPI_DEMO_MODE rather than NODE_ENV so that
+    // hackathon judges can hit the demo flow on the deployed Vercel
+    // preview without having to set up Razorpay/Cashfree. Set UPI_DEMO_MODE=false
+    // in production to disable.
+    return process.env.UPI_DEMO_MODE !== 'false';
+  }
   if (provider === 'paddle') {
     const secret = process.env.PADDLE_WEBHOOK_SECRET;
     if (!secret || !signature) return false;
