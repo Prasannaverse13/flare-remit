@@ -15,6 +15,8 @@ import { useTransferStore, type Transfer } from '@/lib/store';
 import { configuredPsp, verifyPspWebhook } from '@/lib/psp';
 import { getPersistedTransfer, persistTransfer, updatePersistedTransfer } from '@/lib/persistentStore';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
   const signature = req.headers.get('x-razorpay-signature') ?? req.headers.get('x-cashfree-signature') ?? req.headers.get('paddle-signature');
