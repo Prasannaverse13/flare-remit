@@ -310,7 +310,62 @@ export function AppSend() {
               transferHash={t.transferTxHash}
               redeemHash={t.redeemTxHash}
             />
-            {t.pipelineError && <p className="mt-5 rounded-lg bg-amber-50 p-3 font-mono text-[11px] text-amber-900">Payment received, but settlement is paused: {t.pipelineError}</p>}
+
+            {/* Shareable recipient link — works on any device, no app install */}
+            <div className="mt-4 rounded-xl border border-black/8 bg-black/[.02] p-4">
+              <p className="mono-label">Recipient link</p>
+              <p className="mt-1 text-[12px] text-black/55">
+                Share this with the recipient — they can watch the XRP land without installing anything.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <input
+                  readOnly
+                  value={typeof window !== 'undefined' ? `${window.location.origin}/r/${t.id}` : `/r/${t.id}`}
+                  className="flex-1 border-b border-black/15 bg-transparent py-2 font-mono text-[11px] text-black outline-none"
+                  onFocus={(e) => e.currentTarget.select()}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      navigator.clipboard?.writeText(`${window.location.origin}/r/${t.id}`);
+                    }
+                  }}
+                  className="rounded-full border border-black/20 px-3 py-1.5 text-[11px] text-black hover:border-black/60"
+                >
+                  Copy
+                </button>
+                <a
+                  href={`/r/${t.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-black px-3 py-1.5 text-[11px] text-chalk hover:bg-black/85"
+                >
+                  Open ↗
+                </a>
+              </div>
+            </div>
+
+            {t.pipelineError && (
+              <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <p className="font-mono text-[11px] uppercase tracking-wider text-amber-900">Settlement paused</p>
+                <p className="mt-1 text-[12px] text-amber-900">{t.pipelineError}</p>
+                <div className="mt-3 space-y-1 text-[11px] text-amber-900/85">
+                  <p>
+                    Set <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">EXECUTOR_PK</code> in Vercel env
+                    (a Coston2 EOA with FLR for collateral + a small FXRP balance for minting fees).
+                  </p>
+                  <p>
+                    For the full FDC-backed mint, set{' '}
+                    <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">FASSET_MINT_PROOF_URL</code> to a worker
+                    that returns the proof JSON after the underlying XRP payment is confirmed.
+                  </p>
+                  <p>
+                    See <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">MINT_SETUP.md</code> in the repo.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
