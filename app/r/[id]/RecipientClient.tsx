@@ -22,24 +22,10 @@ interface TransferData {
   paymentVerifiedAt?: number;
 }
 
-const DEMO_TRANSFER: TransferData = {
-  id: '',
-  step: 'settled',
-  stage: 6,
-  amountFxrp: '53.7',
-  recipientXrplAddress: 'rK7Ex4n9LYHReCtvnA6z9QMeZiAGrmCyMt',
-  recipientName: 'Maria',
-  senderName: 'You',
-  mintTxHash: '0xfa1254104ba94aa409a3d6e7bcaf905e0d4f07b388b22d87813120d373bedc57',
-  redeemTxHash: '0x594a2d27f1926e669b40d065611cc06aa55ad9aff1a6cb341c66b8960f72b095',
-  collateralReservationId: 'cres_1425199',
-  createdAt: Date.now() - 120000,
-  updatedAt: Date.now(),
-};
-
 export function RecipientClient({ transferId }: { transferId: string }) {
   const [transfer, setTransfer] = useState<TransferData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -47,13 +33,13 @@ export function RecipientClient({ transferId }: { transferId: string }) {
       try {
         const r = await fetch(`/api/transfer/${transferId}`, { cache: 'no-store' });
         if (!r.ok) {
-          if (active) { setTransfer({ ...DEMO_TRANSFER, id: transferId }); setLoading(false); }
+          if (active) { setError(true); setLoading(false); }
           return;
         }
         const d = await r.json();
         if (active) { setTransfer({ ...d, id: transferId }); setLoading(false); }
       } catch {
-        if (active) { setTransfer({ ...DEMO_TRANSFER, id: transferId }); setLoading(false); }
+        if (active) { setError(true); setLoading(false); }
       }
     })();
     return () => { active = false; };
@@ -72,13 +58,30 @@ export function RecipientClient({ transferId }: { transferId: string }) {
     );
   }
 
-  if (!transfer) return null;
+  if (error || !transfer) {
+    return (
+      <div className="min-h-screen text-bone" style={{ background: '#0a0a0a' }}>
+        <div className="mx-auto w-full max-w-[640px] px-5 py-10 sm:py-16">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-bone/50">fxrp remit · recipient view</p>
+          <h1 className="mt-4 text-chalk" style={{ fontSize: 'clamp(36px, 7vw, 52px)', fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1.05 }}>
+            Transfer not found
+          </h1>
+          <p className="mt-4 max-w-[44ch] text-body text-bone">
+            This transfer may have expired or the link is incorrect. Ask the sender for an updated link.
+          </p>
+          <Link href="/" className="mt-8 inline-block rounded-full bg-chalk px-5 py-2.5 text-[13px] font-medium text-obsidian hover:bg-chalk/85">
+            Go to fxrp remit
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const step = transfer.step;
   const isFinal = step === 'settled' || step === 'redeemed';
   const isFailed = step === 'failed';
   const stage = transfer.stage;
-  const verified = step === 'settled' || step === 'proof_submitted' || step === 'minted' || step === 'redeemed' || step === 'transferred' || step === 'payment_received' || step === 'reserved';
+  const verified = step === 'settled' || step === 'proof_submitted' || step === 'minted' || step === 'redeemed' || step === 'transferred' || step === 'reserved';
 
   return (
     <div className="min-h-screen text-bone" style={{ background: '#0a0a0a' }}>

@@ -49,10 +49,7 @@ export async function POST(req: NextRequest) {
   if (amountInr !== undefined && pendingOrder && Math.abs(Number(amountInr) - pendingOrder.amountInr) > 0.01) {
     return NextResponse.json({ error: 'webhook amount does not match the UPI order' }, { status: 400 });
   }
-  const isDemoMode = demo || provider === 'demo';
-  const order = isDemoMode
-    ? { orderId, amountInr: Number(amountInr ?? 0), upiRef: String(upiRef ?? payload.upiRef ?? ''), status: 'paid' as const, paidAt: Date.now() }
-    : provider === 'paddle'
+  const order = provider === 'paddle'
     ? { orderId, amountInr: Number(amountInr), upiRef: String(upiRef), status: 'paid' as const, paidAt: Date.now() }
     : markPaid(orderId);
   if (!order) {
