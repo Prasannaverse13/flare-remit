@@ -28,6 +28,20 @@ Full evidence table in [`docs/HACKATHON_READINESS.md`](docs/HACKATHON_READINESS.
 
 ---
 
+## Flare resources integrated
+
+| Flare Resource | What it does | Where it's used |
+|---|---|---|
+| **FTSO v2** (XRP/USD price feed) | Live XRP price for INR→XRP conversion | `lib/ftso.ts` — reads `FtsoV2` via `FlareContractRegistry`, called by `app/api/quote/route.ts` |
+| **FlareContractRegistry** | Resolves all contract addresses at runtime (no hardcoding) | `lib/fxrp.ts` — resolves `AssetManagerFXRP` and FXRP ERC-20 token address |
+| **FAssets — FXRP** | Smart-contract wrapped XRP on Flare, the in-flight remittance asset | `lib/fassets.ts` — mint (reserve + execute) and redeem flows via `AssetManagerFXRP` |
+| **FDC (Flare Data Connector)** | Verifies XRPL payments on-chain via attestation proofs | `lib/fassets.ts` — fetches `IXRPPayment.Proof` for direct minting; `scripts/real-mint.mjs` — full FDC attestation + proof flow |
+| **Coston2 testnet** | Flare's test network where all on-chain activity runs | `lib/flare.ts` — chain config, RPC, explorer URLs; all API routes target Coston2 |
+| **AssetManagerFXRP contract** | Core contract that handles collateral, minting, and redemption | `app/api/mint/route.ts` — `reserveCollateral` + `executeMinting`; `app/api/redeem/route.ts` — `redeemAmount`; `scripts/redeem.mjs` |
+| **Core Vault** (XRPL side) | Receives XRP deposits and releases XRP on redemption | `lib/fassets.ts` — XRPL payment target `rDhpmiPq4BVBDWMVdSrmkgt8thKyRzGV1p` |
+
+---
+
 ## What's in the box
 
 ```
@@ -45,7 +59,7 @@ flare-remit/
 │   │   └── redeem/            FAsset redemption ticket
 │   └── providers.tsx          wagmi + RainbowKit
 ├── components/
-│   ├── SendWizard.tsx         3-step wizard (the heart of the demo)
+│   ├── AppSend.tsx            transfer card with country selector
 │   ├── StatusTracker.tsx      live transfer state
 │   ├── ProgressSteps.tsx
 │   ├── HeroStats.tsx
@@ -58,6 +72,9 @@ flare-remit/
 │   ├── countries.ts           destination country registry
 │   ├── mockUpi.ts             Razorpay-or-mock UPI
 │   └── store.ts               in-flight transfer state
+├── scripts/
+│   ├── real-mint.mjs          full FDC attestation + direct minting flow
+│   └── redeem.mjs             on-chain FXRP redeem to XRPL
 └── README.md
 ```
 
@@ -102,19 +119,3 @@ To exercise the live onchain path:
 - **It's a real product** — not a wrapped-DeFi clone. India's cross-border remittance is a $100B+/year market, mostly on rails that charge 5–7%.
 - **It ships in one sitting** — the demo is one flow, three screens, one env var.
 - **It composes with the rest of the stack** — the recipient's wallet can plug in FTSO-priced FX hedges, FDC-attested KYC, or a Smart Accounts recovery flow without touching the sender side.
-
-## What's intentionally simplified
-
-- **Razorpay** is mocked so the demo runs without a merchant account. Drop a real key into `.env.local` to swap.
-- **In-memory state** for transfers (zustand). A real deploy swaps in Postgres or a queue.
-
-## Next steps (if you want to take this past the hackathon)
-
-- Multi-currency corridors (FXRP + FBTC + FDOGE).
-- Recipient-side stablecoin conversion (FXRP → USDC.e on Flare via a DEX router).
-- Mobile-first PWA with push notifications on each step.
-- KYC via FDC attestation for cross-border compliance.
-
-## License
-
-MIT. Build on it.
