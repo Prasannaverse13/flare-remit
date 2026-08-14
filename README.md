@@ -4,7 +4,7 @@
 
 Built for [Flare Summer Signal](https://dorahacks.io/hackathon/flaresummersignal/detail) — Track 1: Interoperable Asset Products.
 
-> The pitch: India's UPI is the cheapest way to onboard INR. Flare's FAssets (FXRP) let you put a smart-contract wrapper around XRP — which has none. Combined, you get a remittance rail with a 0.5% fee and a 2-minute settlement, instead of Western Union's 6–7% and 15-minute cash pickup.
+> The pitch: India's UPI is the cheapest way to onboard INR. Flare's FAssets (FXRP) let you put a smart-contract wrapper around XRP — which has none. Combined, you get a remittance rail with a 0.5% fee and a 2-minute settlement, instead of Western Union's 6–7% and 15-minute cash pickup. Send to **any country** where the recipient holds XRP.
 
 ---
 
@@ -55,6 +55,7 @@ flare-remit/
 │   ├── fxrp.ts                onchain resolver (no hardcoded addresses)
 │   ├── fassets.ts             full reserve/execute mint helpers
 │   ├── ftso.ts                FTSO price read
+│   ├── countries.ts           destination country registry
 │   ├── mockUpi.ts             Razorpay-or-mock UPI
 │   └── store.ts               in-flight transfer state
 └── README.md
@@ -85,19 +86,20 @@ To exercise the live onchain path:
 
 ## The 2-minute demo script
 
-1. "Sending ₹5,000 to my cousin in Manila."
-2. Click *Continue to UPI →*. The UPI intent screen pops up.
-3. Click *Simulate payment success*. (In prod, this is replaced by the real Razorpay success screen.)
-4. Status moves `UPI received → Minting FXRP → Transferred`.
-5. Open `/track/:id` → click *Recipient redeems to XRPL* → status flips to `Redeemed`.
-6. Show `/compare` — recipient gets **53.7 XRP** vs Western Union's **48 XRP** for the same ₹5,000.
-7. Done.
+1. "Sending ₹5,000 abroad."
+2. Pick a destination country (Philippines, US, UAE, etc.).
+3. Enter recipient name + XRPL address.
+4. Click *Continue to UPI →*. The UPI intent screen pops up.
+5. Click *Simulate payment success*. (In prod, this is replaced by the real Razorpay success screen.)
+6. Status moves `UPI received → Minting FXRP → Transferred`.
+7. Show `/compare` — recipient gets **53.7 XRP** vs Western Union's **48 XRP** for the same ₹5,000.
+8. Done.
 
 ## Why this wins Track 1
 
 - **The Flare integration isn't decoration** — FXRP is the entire payment vehicle. Without it, the product doesn't exist.
 - **A judge can verify the integration** — every tx hash links to the Coston2 explorer.
-- **It's a real product** — not a wrapped-DeFi clone. India→SEA remittance is a $20B+ market, mostly on rails that charge 5–7%.
+- **It's a real product** — not a wrapped-DeFi clone. India's cross-border remittance is a $100B+/year market, mostly on rails that charge 5–7%.
 - **It ships in one sitting** — the demo is one flow, three screens, one env var.
 - **It composes with the rest of the stack** — the recipient's wallet can plug in FTSO-priced FX hedges, FDC-attested KYC, or a Smart Accounts recovery flow without touching the sender side.
 

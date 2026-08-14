@@ -100,9 +100,9 @@ export default function ComparePage() {
         </div>
 
         <p className="text-caption text-ash max-w-[64ch]">
-          India→Philippines is a $12B/year corridor. Legacy rails skim 5–7% off every transfer.
+          Cross-border remittance from India is a $100B+/year market. Legacy rails skim 5–7% off every transfer.
           A 0.5% onchain path returns ~₹410 to the sender on a ₹5,000 transfer. Multiply that
-          across a corridor and the savings are material.
+          across corridors and the savings are material.
         </p>
       </div>
     </div>

@@ -39,7 +39,7 @@ export function HeroStats() {
   return (
     <div className="glass rounded-2xl p-5">
       <div className="flex items-center justify-between">
-        <div className="label">Sending ₹5,000 to Manila</div>
+        <div className="label">Sending ₹5,000 abroad</div>
         <span className="chip">
           <span className="h-1.5 w-1.5 rounded-full bg-flare-success" />
           {q?.xrpUsdSource === 'ftso' ? 'FTSO live' : 'fallback price'}

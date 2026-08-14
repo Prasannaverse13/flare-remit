@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { inr, shortAddr, fmtTime } from '@/lib/format';
 import { useTransferStore } from '@/lib/store';
+import { COUNTRIES, getCorridorLabel, type Country } from '@/lib/countries';
 
 type Quote = {
   inr: number;
@@ -31,8 +32,9 @@ export function AppSend() {
   const updateTransfer = useTransferStore((s) => s.update);
 
   const [amount, setAmount] = useState('5000');
-  const [recipientName, setRecipientName] = useState('Maria Santos');
-  const [recipientXrpl, setRecipientXrpl] = useState('rMxCKb3wKxE4k1d1G6qLfXf8sF1p5bJfA9');
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientXrpl, setRecipientXrpl] = useState('');
+  const [recipientCountry, setRecipientCountry] = useState<Country>(COUNTRIES[0]);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loadingQuote, setLoadingQuote] = useState(false);
   const [order, setOrder] = useState<{ orderId: string; upiRef: string; deepLink: string } | null>(null);
@@ -239,12 +241,29 @@ export function AppSend() {
             </Field>
 
             <Field label="Recipient">
+              <div className="mb-3">
+                <label className="text-[12px] text-black/55 mb-1 block">Destination country</label>
+                <select
+                  value={recipientCountry.code}
+                  onChange={(e) => {
+                    const c = COUNTRIES.find((c) => c.code === e.target.value);
+                    if (c) setRecipientCountry(c);
+                  }}
+                  className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-[14px] text-black outline-none focus:border-black"
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.flag} {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <input
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
                   className="border-b border-black/15 bg-transparent py-2 text-[15px] text-black outline-none focus:border-black"
-                  placeholder="Name"
+                  placeholder="Recipient name"
                 />
                 <input
                   value={recipientXrpl}
@@ -402,7 +421,7 @@ export function AppSend() {
         <div className="card">
           <p className="eyebrow">Corridor</p>
           <p className="mt-2 text-subhead text-chalk" style={{ letterSpacing: '-0.015em' }}>
-            India → Philippines
+            {getCorridorLabel(recipientCountry)}
           </p>
           <p className="mt-1 text-caption text-ash">
             UPI on the sender side, native XRP on the XRPL on the recipient side. FXRP is the in-flight asset on Flare.

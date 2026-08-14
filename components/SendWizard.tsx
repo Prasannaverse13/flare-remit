@@ -16,6 +16,7 @@ import { inr, shortAddr, fmtTime } from '@/lib/format';
 import { ProgressSteps } from './ProgressSteps';
 import { StatusTracker } from './StatusTracker';
 import { useTransferStore } from '@/lib/store';
+import { COUNTRIES, type Country } from '@/lib/countries';
 
 type Quote = {
   inr: number;
@@ -44,8 +45,9 @@ export function SendWizard() {
 
   const [step, setStep] = useState(0);
   const [amount, setAmount] = useState('5000');
-  const [recipientName, setRecipientName] = useState('Maria Santos');
-  const [recipientXrpl, setRecipientXrpl] = useState('rMxCKb3wKxE4k1d1G6qLfXf8sF1p5bJfA9');
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientXrpl, setRecipientXrpl] = useState('');
+  const [recipientCountry, setRecipientCountry] = useState<Country>(COUNTRIES[0]);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loadingQuote, setLoadingQuote] = useState(false);
   const [order, setOrder] = useState<{
@@ -159,7 +161,22 @@ export function SendWizard() {
             </div>
           </div>
           <div>
-            <label className="label">Recipient (XRPL address)</label>
+            <label className="label">Destination country</label>
+            <select
+              value={recipientCountry.code}
+              onChange={(e) => {
+                const c = COUNTRIES.find((c) => c.code === e.target.value);
+                if (c) setRecipientCountry(c);
+              }}
+              className="input mt-1"
+            >
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.flag} {c.name}
+                </option>
+              ))}
+            </select>
+            <label className="label mt-3 block">Recipient (XRPL address)</label>
             <input
               className="input mt-1 font-mono text-sm"
               value={recipientXrpl}
