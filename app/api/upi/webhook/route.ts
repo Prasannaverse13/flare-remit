@@ -49,9 +49,13 @@ export async function POST(req: NextRequest) {
   if (amountInr !== undefined && pendingOrder && Math.abs(Number(amountInr) - pendingOrder.amountInr) > 0.01) {
     return NextResponse.json({ error: 'webhook amount does not match the UPI order' }, { status: 400 });
   }
+  // Primary: real PSP marks order paid via webhook (Razorpay/Cashfree).
+  // Fallback: Paddle constructs order from body; demo mode constructs from body
+  // because Vercel serverless instances don't share in-memory order state.
   const order = provider === 'paddle'
     ? { orderId, amountInr: Number(amountInr), upiRef: String(upiRef), status: 'paid' as const, paidAt: Date.now() }
-    : markPaid(orderId);
+    : markPaid(orderId)
+    ?? (demo ? { orderId, amountInr: Number(amountInr ?? 0), upiRef: String(upiRef ?? ''), status: 'paid' as const, paidAt: Date.now() } : null);
   if (!order) {
     return NextResponse.json({ error: 'unknown order' }, { status: 404 });
   }
