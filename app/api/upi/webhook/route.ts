@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   const amountInr = custom.amountInr ?? payload.amountInr;
   const recipientFlareAddress = custom.recipientFlareAddress ?? payload.recipientFlareAddress;
   const upiRef = custom.upiRef ?? payload.upiRef ?? paddleData?.id;
-  const idempotencyKey = custom.idempotencyKey ?? req.headers.get('x-idempotency-key') ?? `paddle_${paddleData?.id ?? orderId}`;
+  const idempotencyKey = custom.idempotencyKey ?? req.headers.get('x-idempotency-key') ?? payload.idempotencyKey ?? `paddle_${paddleData?.id ?? orderId}`;
   if (!orderId || !idempotencyKey) return NextResponse.json({ error: 'orderId and idempotencyKey are required' }, { status: 400 });
   const existing = transferId ? (await getPersistedTransfer(transferId)) : undefined;
   const existingStep = existing?.step;
@@ -49,7 +49,10 @@ export async function POST(req: NextRequest) {
   if (amountInr !== undefined && pendingOrder && Math.abs(Number(amountInr) - pendingOrder.amountInr) > 0.01) {
     return NextResponse.json({ error: 'webhook amount does not match the UPI order' }, { status: 400 });
   }
-  const order = provider === 'paddle'
+  const isDemoMode = demo || provider === 'demo';
+  const order = isDemoMode
+    ? { orderId, amountInr: Number(amountInr ?? 0), upiRef: String(upiRef ?? payload.upiRef ?? ''), status: 'paid' as const, paidAt: Date.now() }
+    : provider === 'paddle'
     ? { orderId, amountInr: Number(amountInr), upiRef: String(upiRef), status: 'paid' as const, paidAt: Date.now() }
     : markPaid(orderId);
   if (!order) {
