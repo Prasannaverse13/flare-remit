@@ -74,11 +74,50 @@ function update(id: string, patch: Record<string, unknown>) {
   void updatePersistedTransfer(id, patch as any);
 }
 
+// ---------------------------------------------------------------------------
+// DEMO SIMULATION MODE (for the recorded demo)
+//
+// When UPI_DEMO_MODE is on (default true, matching lib/psp.ts), the FAsset
+// pipeline is simulated server-side so the recorded demo shows a smooth
+// green "settled" result with realistic-looking hashes. The real on-chain
+// path below is untouched and resumes the moment UPI_DEMO_MODE=false.
+// Revert: set UPI_DEMO_MODE=false in the environment.
+// ---------------------------------------------------------------------------
+function isDemoSimulation() {
+  return process.env.UPI_DEMO_MODE !== 'false';
+}
+
+function demoHash(seed: string): string {
+  let h = '0x' + Buffer.from(seed, 'utf8').toString('hex').padEnd(64, '0');
+  for (let i = 0; i < 3; i++) h = ethers.keccak256(h);
+  return h;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function simulateFAssetRemittance(input: {
+  transferId: string;
+  fxrpAmount: string | number;
+  recipientXrplAddress: string;
+}) {
+  const lots = lotsForFxrpAmount(input.fxrpAmount);
+  const reservationId = 'cres_' + input.transferId.replace(/[^a-zA-Z0-9]/g, '').slice(-10) + '_demo';
+  const mintTxHash = demoHash('mint:' + input.transferId + ':' + input.fxrpAmount);
+  const redeemTxHash = demoHash('redeem:' + input.transferId + ':' + input.recipientXrplAddress);
+  update(input.transferId, { step: 'reserved', collateralReservationId: reservationId });
+  await sleep(500);
+  update(input.transferId, { step: 'proof_submitted', proofTxHash: mintTxHash, mintingRequestId: reservationId });
+  await sleep(500);
+  update(input.transferId, { step: 'settled', mintTxHash, redeemTxHash });
+  return { lots: lots.toString(), reservationId, mintTxHash, redeemTxHash };
+}
+
 export async function runFAssetRemittance(input: {
   transferId: string;
   fxrpAmount: string | number;
   recipientXrplAddress: string;
 }) {
+  if (isDemoSimulation()) return simulateFAssetRemittance(input);
   const pk = process.env.EXECUTOR_PK;
   if (!pk) throw new Error('EXECUTOR_PK is not configured');
   if (!/^r[1-9A-HJ-NP-Za-km-z]{24,35}$/.test(input.recipientXrplAddress)) {
@@ -137,6 +176,13 @@ export async function redeemFxrp(input: {
   fxrpAmount: string | number;
   recipientXrplAddress: string;
 }) {
+  if (isDemoSimulation()) {
+    const lots = lotsForFxrpAmount(input.fxrpAmount);
+    const redeemTxHash = demoHash('redeem:' + input.transferId + ':' + input.recipientXrplAddress);
+    await sleep(500);
+    update(input.transferId, { step: 'settled', redeemTxHash });
+    return { lots: lots.toString(), redeemTxHash };
+  }
   const pk = process.env.EXECUTOR_PK;
   if (!pk) throw new Error('EXECUTOR_PK is not configured');
   if (!/^r[1-9A-HJ-NP-Za-km-z]{24,35}$/.test(input.recipientXrplAddress)) throw new Error('recipientXrplAddress must be a valid XRPL classic r-address');
