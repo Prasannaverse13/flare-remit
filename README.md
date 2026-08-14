@@ -92,6 +92,77 @@ flare-remit/
     └── HACKATHON_READINESS.md  on-chain evidence table
 ```
 
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          SENDER (India)                                     │
+│                                                                             │
+│  ┌──────────┐    ┌──────────────┐    ┌──────────────────────────────────┐   │
+│  │ UPI App  │───▶│  /api/upi/   │───▶│  Webhook confirms payment        │   │
+│  │ (GPay,   │    │  create      │    │  → POST /api/upi/webhook         │   │
+│  │ PhonePe) │    │  + confirm   │    │  → runFAssetRemittance()         │   │
+│  └──────────┘    └──────────────┘    └──────────────┬───────────────────┘   │
+│                                                      │                      │
+│  ┌───────────────────────────────────────────────────▼──────────────────┐   │
+│  │                     Next.js App (Vercel)                            │   │
+│  │                                                                     │   │
+│  │  ┌─────────┐  ┌──────────┐  ┌────────────┐  ┌──────────────────┐   │   │
+│  │  │ FTSO v2 │  │ Quote    │  │ PSP        │  │ Transfer Store   │   │   │
+│  │  │ XRP/USD │  │ Engine   │  │ Abstraction│  │ (zustand + JSON) │   │   │
+│  │  └────┬────┘  └──────────┘  └────────────┘  └──────────────────┘   │   │
+│  │       │ live price                                                   │   │
+│  └───────┼──────────────────────────────────────────────────────────────┘   │
+│          │                                                                  │
+└──────────┼──────────────────────────────────────────────────────────────────┘
+           │
+           ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    FLARE (Coston2 Testnet)                                   │
+│                                                                             │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │  FlareContractRegistry                                              │   │
+│  │  Resolves: AssetManagerFXRP, FXRP Token, FtsoV2                     │   │
+│  └──────────────────────────────┬───────────────────────────────────────┘   │
+│                                 │                                           │
+│  ┌──────────────────────────────▼───────────────────────────────────────┐   │
+│  │                AssetManagerFXRP Contract                             │   │
+│  │                                                                      │   │
+│  │  1. reserveCollateral(agentVault, lots)  ← collateral reservation    │   │
+│  │  2. executeMinting(proof, reservationId) ← FDC-backed mint           │   │
+│  │  3. redeem(lots, xrplAddress)            ← return to XRPL            │   │
+│  └──────────┬──────────────────────────┬────────────────────────────────┘   │
+│             │                          │                                    │
+│  ┌──────────▼──────────┐  ┌────────────▼─────────────────────────────┐     │
+│  │  FXRP ERC-20 Token  │  │  FDC (Flare Data Connector)             │     │
+│  │  In-flight asset    │  │  Attests XRPL payments via proofs       │     │
+│  │  6 decimals, lots   │  │  Type: XRPPayment                       │     │
+│  └─────────────────────┘  └─────────────────────────────────────────┘     │
+│                                                                             │
+└──────────┬──────────────────────────┬──────────────────────────────────────┘
+           │                          │
+           ▼                          ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    XRPL (XRP Ledger)                                        │
+│                                                                             │
+│  ┌─────────────────────┐         ┌──────────────────────────────────────┐   │
+│  │  Core Vault         │         │  Recipient Wallet                    │   │
+│  │  rDhpmiPq4BV...     │────────▶│  rK7Ex4n9LYH...                      │   │
+│  │  Receives XRP       │  XRP    │  Receives native XRP                 │   │
+│  │  deposits           │  release│  from FXRP redemption                │   │
+│  └─────────────────────┘         └──────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Data flow summary:**
+
+1. Sender enters amount → FTSO v2 provides live XRP/USD price → quote engine converts INR → FXRP
+2. Sender pays via UPI → PSP webhook (or demo confirmation) triggers the pipeline
+3. **Flare side**: `reserveCollateral` locks agent vault → FDC attests the XRPL deposit → `executeMinting` mints FXRP → `redeem` burns FXRP
+4. **XRPL side**: Agent releases native XRP to recipient's wallet
+5. Total settlement: ≈ 2 minutes, 0.5% fee (vs Western Union 6–7%, 15 min)
+
 ## How the Flare integration works
 
 1. **Price feed** — `/api/quote` reads the FTSO `XRP/USD` feed (`getFeedById` against `FtsoV2` resolved from `FlareContractRegistry`). If the FTSO read fails on testnet, it falls back to a sensible static price so the demo never stalls.
