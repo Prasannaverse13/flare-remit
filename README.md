@@ -8,6 +8,26 @@ Built for [Flare Summer Signal](https://dorahacks.io/hackathon/flaresummersignal
 
 ---
 
+## Live on-chain proof (Coston2 testnet)
+
+The full flow — XRP deposit → FDC attestation → FXRP mint → FXRP redeem → XRP withdrawal — has been executed and verified on Flare's Coston2 testnet.
+
+| Step | TX Hash | Explorer |
+|---|---|---|
+| **Mint** (XRPL → FXRP) | `0xfa1254104ba94aa409a3d6e7bcaf905e0d4f07b388b22d87813120d373bedc57` | [View](https://coston2-explorer.flare.network/tx/0xfa1254104ba94aa409a3d6e7bcaf905e0d4f07b388b22d87813120d373bedc57) |
+| **Redeem** (FXRP → XRPL) | `0x594a2d27f1926e669b40d065611cc06aa55ad9aff1a6cb341c66b8960f72b095` | [View](https://coston2-explorer.flare.network/tx/0x594a2d27f1926e669b40d065611cc06aa55ad9aff1a6cb341c66b8960f72b095) |
+
+- **XRPL deposit**: 10.2 XRP sent to Core Vault (`rDhpmiPq4BVBDWMVdSrmkgt8thKyRzGV1p`) with direct-mint memo
+- **FDC attestation**: Attestation type `XRPPayment`, voting round 1425199, status VALID
+- **Mint**: `DirectMintingExecuted` event — 10 FXRP minted to executor
+- **Redeem**: `redeemAmount(10,000,000 UBA)` — 1 lot (10 FXRP) redeemed to XRPL recipient
+- **Executor**: `0x8070C21dBD21BE7Fe0956681e0Bfb0d8C5544186`
+- **AssetManagerFXRP**: `0xc1Ca88b937d0b528842F95d5731ffB586f4fbDFA`
+
+Full evidence table in [`docs/HACKATHON_READINESS.md`](docs/HACKATHON_READINESS.md).
+
+---
+
 ## What's in the box
 
 ```
@@ -44,8 +64,8 @@ flare-remit/
 
 1. **Price feed** — `/api/quote` reads the FTSO `XRP/USD` feed (`getFeedById` against `FtsoV2` resolved from `FlareContractRegistry`). If the FTSO read fails on testnet, it falls back to a sensible static price so the demo never stalls.
 2. **Address resolution** — `lib/fxrp.ts` resolves the `AssetManagerFXRP` and the FXRP ERC-20 address via `FlareContractRegistry.getContractAddressByName`. **No addresses are hardcoded.**
-3. **Mint + transfer** — `POST /api/mint` calls the AssetManager and FXRP token contracts via ethers v6. Without a `DEMO_EXECUTOR_PK` env var, it runs in dry mode (synthetic tx hash) so the UI flow stays demoable. With a key, it executes the real transfer on Coston2.
-4. **Redemption** — `POST /api/redeem` simulates the FAsset redemption ticket (the onchain portion is wired in `lib/fassets.ts`; the demo's simulated settlement is intentional so the XRPL hop doesn't need a funded agent).
+3. **Mint + transfer** — `POST /api/mint` calls the AssetManager and FXRP token contracts via ethers v6. Without a `DEMO_EXECUTOR_PK` env var, it runs in dry mode (synthetic tx hash) so the UI flow stays demoable. With a key, it executes the real direct minting path on Coston2 (XRPL payment → FDC attestation → `executeDirectMinting`).
+4. **Redemption** — `POST /api/redeem` calls `redeemAmount` on the AssetManager to return FXRP to native XRP on XRPL. The redemption ticket is created on-chain and the agent releases XRP to the recipient's XRPL address.
 
 ## Running it
 
@@ -84,7 +104,6 @@ To exercise the live onchain path:
 ## What's intentionally simplified
 
 - **Razorpay** is mocked so the demo runs without a merchant account. Drop a real key into `.env.local` to swap.
-- **XRPL settlement** is simulated server-side. The FAsset redemption path is wired in `lib/fassets.ts` — flip `dry: false` in `app/api/redeem/route.ts` to enable.
 - **In-memory state** for transfers (zustand). A real deploy swaps in Postgres or a queue.
 
 ## Next steps (if you want to take this past the hackathon)
