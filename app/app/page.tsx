@@ -13,7 +13,7 @@ export default function AppHome() {
       <AppNav />
       <div>
         <div className="spatial-greeting"><div><p className="eyebrow">COSTON2 · LIVE DESK</p><p className="spatial-welcome">Good morning, operator</p></div><div className="spatial-status"><span /> Wallet session ready</div></div>
-        <div className="spatial-overview"><div className="spatial-mini"><span className="eyebrow">Corridor</span><strong>IN → PH</strong><small>UPI / XRP</small></div><div className="spatial-mini"><span className="eyebrow">Typical settle</span><strong>02:00</strong><small>minutes</small></div><div className="spatial-mini"><span className="eyebrow">Network</span><strong>FLR</strong><small>FAssets enabled</small></div></div>
+        <div className="spatial-overview"><div className="spatial-mini"><span className="eyebrow">Corridor</span><strong>Global</strong><small>UPI → XRP</small></div><div className="spatial-mini"><span className="eyebrow">Typical settle</span><strong>02:00</strong><small>minutes</small></div><div className="spatial-mini"><span className="eyebrow">Network</span><strong>FLR</strong><small>FAssets enabled</small></div></div>
         <header>
           <p className="eyebrow">Send</p>
           <h1
