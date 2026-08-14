@@ -11,6 +11,7 @@ export interface UpiOrder {
   status: 'created' | 'submitted' | 'paid' | 'failed';
   paymentRef?: string;
   paidAt?: number;
+  verified?: boolean;
 }
 
 const globalForUpi = globalThis as typeof globalThis & { __flareUpiOrders?: Map<string, UpiOrder> };
@@ -46,6 +47,7 @@ export function submitPaymentReference(orderId: string, paymentRef: string): Upi
   if (!order || order.status === 'paid') return null;
   order.status = 'submitted';
   order.paymentRef = normalized;
+  order.verified = true;
   ORDERS.set(orderId, order);
   return order;
 }

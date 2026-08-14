@@ -8,5 +8,5 @@ export async function POST(req: NextRequest) {
   if (!orderId || !paymentRef) return NextResponse.json({ error: 'orderId and paymentRef are required' }, { status: 400 });
   const order = submitPaymentReference(orderId, paymentRef);
   if (!order) return NextResponse.json({ error: 'invalid payment reference or order' }, { status: 400 });
-  return NextResponse.json({ ok: true, status: 'awaiting_verification', order }, { status: 202 });
+  return NextResponse.json({ ok: true, verified: order.verified === true, status: order.verified ? 'verified' : 'awaiting_verification', order }, { status: 202 });
 }

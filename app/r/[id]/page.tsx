@@ -29,10 +29,17 @@ function RecipientView({ transfer }: { transfer: NonNullable<Awaited<ReturnType<
   const isFinal = step === 'settled' || step === 'redeemed';
   const isFailed = step === 'failed';
   const stage = stageFromStep(step);
+  const verified = Boolean(transfer.paymentVerifiedAt);
   return (
     <div className="min-h-screen text-bone" style={{ background: '#0a0a0a' }}>
       <div className="mx-auto w-full max-w-[640px] px-5 py-10 sm:py-16">
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-bone/50">fxrp remit · recipient view</p>
+        {verified && (
+          <span className="mt-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-[12px] text-emerald-300">
+            <span className="grid h-4 w-4 place-items-center rounded-full bg-emerald-400 text-[9px] font-bold text-black">✓</span>
+            Payment verified · UPI received
+          </span>
+        )}
         <h1
           className="mt-4 text-chalk"
           style={{ fontSize: 'clamp(36px, 7vw, 52px)', fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1.05 }}

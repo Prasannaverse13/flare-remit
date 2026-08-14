@@ -41,7 +41,7 @@ export function AppSend() {
   const [showUpi, setShowUpi] = useState(false);
   const [upiQr, setUpiQr] = useState<string | null>(null);
   const [paymentRef, setPaymentRef] = useState('');
-  const [verificationPending, setVerificationPending] = useState(false);
+  const [verified, setVerified] = useState(false);
   const [stage, setStage] = useState<'compose' | 'pay' | 'tracking'>('compose');
   const [paying, setPaying] = useState(false);
   const [transferId, setTransferId] = useState<string | null>(null);
@@ -169,9 +169,9 @@ export function AppSend() {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ orderId: order.orderId, paymentRef }),
     });
-    if (response.ok) {
-      setVerificationPending(true);
-      setShowUpi(false);
+    const data = await response.json().catch(() => ({}));
+    if (response.ok && data.verified) {
+      setVerified(true);
     }
   }
 
@@ -306,7 +306,7 @@ export function AppSend() {
                   Pay with UPI →
                 </button>
               ) : (
-                order && <UpiOrderRow order={order} onOpen={() => setShowUpi(true)} onSimulate={simulatePay} onSubmit={submitPaymentReference} verificationPending={verificationPending} paying={paying} />
+                order && <UpiOrderRow order={order} onOpen={() => setShowUpi(true)} onSimulate={simulatePay} onSubmit={submitPaymentReference} verified={verified} paying={paying} />
               )}
             </div>
           </div>
@@ -406,11 +406,23 @@ export function AppSend() {
               <a href={order.deepLink} className="rounded-full bg-black px-4 py-2.5 text-sm font-medium text-white">Continue to UPI app</a>
               <button type="button" onClick={() => navigator.clipboard?.writeText(order.deepLink)} className="rounded-full border border-black/20 px-4 py-2.5 text-sm">Copy payment link</button>
             </div>
-            <label className="mt-5 block text-sm font-medium">UPI transaction ID / UTR
-              <input value={paymentRef} onChange={(e) => setPaymentRef(e.target.value)} placeholder="Enter the UTR after paying" className="mt-2 w-full rounded-xl border border-black/15 px-3 py-3 font-mono text-sm outline-none focus:border-black" />
-            </label>
-            <button type="button" onClick={submitPaymentReference} disabled={paymentRef.trim().length < 8} className="mt-3 w-full rounded-full border border-black/20 px-4 py-3 text-sm font-medium disabled:opacity-40">Submit UTR for verification</button>
-            <button type="button" onClick={() => { setShowUpi(false); simulatePay(); }} disabled={paying} className="mt-6 w-full rounded-full bg-black px-4 py-3 text-sm font-medium text-white disabled:opacity-40">{paying ? 'Processing…' : 'I paid — confirm & continue'}</button>
+            {verified ? (
+              <div className="mt-5 flex items-center gap-3 rounded-xl border border-emerald-300 bg-emerald-50 p-4">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-emerald-500 text-[12px] font-bold text-white">✓</span>
+                <div>
+                  <p className="text-sm font-semibold text-emerald-800">Payment verified</p>
+                  <p className="mt-0.5 font-mono text-[11px] text-emerald-700">{paymentRef.trim().toUpperCase()}</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <label className="mt-5 block text-sm font-medium">UPI transaction ID / UTR
+                  <input value={paymentRef} onChange={(e) => setPaymentRef(e.target.value)} placeholder="Enter the UTR after paying" className="mt-2 w-full rounded-xl border border-black/15 px-3 py-3 font-mono text-sm outline-none focus:border-black" />
+                </label>
+                <button type="button" onClick={submitPaymentReference} disabled={paymentRef.trim().length < 8} className="mt-3 w-full rounded-full border border-black/20 px-4 py-3 text-sm font-medium disabled:opacity-40">Submit UTR for verification</button>
+              </>
+            )}
+            <button type="button" onClick={() => { setShowUpi(false); simulatePay(); }} disabled={paying} className="mt-6 w-full rounded-full bg-black px-4 py-3 text-sm font-medium text-white disabled:opacity-40">{paying ? 'Processing…' : verified ? 'Payment verified — I paid, continue →' : 'I paid — confirm & continue'}</button>
             <p className="mt-3 text-center text-[11px] text-black/45">Demo confirmation is for local testing only. Production minting requires a signed PSP webhook.</p>
           </div>
         </div>
@@ -480,19 +492,19 @@ function UpiOrderRow({
   onOpen,
   onSubmit,
   onSimulate,
-  verificationPending,
+  verified,
   paying,
 }: {
   order: { orderId: string; upiRef: string; deepLink: string };
   onOpen: () => void;
   onSubmit: () => void;
   onSimulate: () => void;
-  verificationPending: boolean;
+  verified: boolean;
   paying: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {verificationPending && <span className="rounded-full bg-amber-50 px-3 py-2 text-[12px] text-amber-800">Awaiting payment verification</span>}
+      {verified && <span className="rounded-full bg-emerald-50 px-3 py-2 text-[12px] text-emerald-800">Payment verified ✓</span>}
       <button type="button" onClick={onOpen} className="rounded-full border border-black/20 px-4 py-2 text-[13px] text-black hover:border-black/60">
         Show UPI QR
       </button>
@@ -502,7 +514,7 @@ function UpiOrderRow({
         disabled={paying}
         className="rounded-full bg-black px-5 py-2.5 text-[13px] font-medium text-chalk transition hover:bg-black/85 disabled:opacity-40"
       >
-        {paying ? 'Processing…' : 'I paid — continue'}
+        {paying ? 'Processing…' : verified ? 'Payment verified — continue →' : 'I paid — continue'}
       </button>
     </div>
   );
